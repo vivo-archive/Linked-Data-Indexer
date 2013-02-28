@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xmlns:eclipse="antlib:com.unicorntoast.ant.ivy.eclipse"
+    xmlns:static="antlib:com.unicorntoast.ant.ivy.static_classpath"
+    xmlns:export="antlib:com.unicorntoast.ant.ivy.export"
+    xmlns:ivy="antlib:org.apache.ivy.ant"
+    default="help"
+    >
+
+  <!-- here is the version of ivy we will use. change this property to try a newer 
+       version if you want -->
+  <property name="ivy.install.version" value="2.3.0" />
+  <property name="ivy.jar.dir" value="${basedir}/contrib" />
+  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+
+  <property name="build.dir" value="build" />
+  <property name="src.dir" value="src" />
+
+
+  <!-- using http://code.google.com/p/ant-ivy-tools/ -->
+  <property name="ant_ivy_tools_classpath" value="contrib/ivy.jar:contrib/ant-ivy-tools.jar" />
+
+  <taskdef uri="antlib:com.unicorntoast.ant.ivy.eclipse" classpath="${ant_ivy_tools_classpath}" />
+  <taskdef uri="antlib:com.unicorntoast.ant.ivy.static_classpath" classpath="${ant_ivy_tools_classpath}" />
+  <taskdef uri="antlib:com.unicorntoast.ant.ivy.export" classpath="${ant_ivy_tools_classpath}" />
+
+  <!-- ================================= 
+       target: help
+       ================================= -->
+  <target name="help">
+    <echo>important: before first compile, execute "ant update-deps"</echo>
+    <echo />   
+    <echo>update-deps - fetch dependencies (ivy) and create necessary files ( .classpath, project.classpath )</echo>
+    <echo>compile</echo>
+    <echo>clean</echo>
+    <echo />
+    
+  </target>
+
+  <!-- ================================= 
+       target: download-ivy
+       ================================= -->
+  <target name="download-ivy" unless="skip.download">
+    <mkdir dir="${ivy.jar.dir}"/>
+    <!-- download Ivy from web site so that it can be used even without any special installation -->
+    <echo message="installing ivy..."/>
+    <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+         dest="${ivy.jar.file}" usetimestamp="true"/>
+  </target>
+
+  <!-- ================================= 
+       target: install-ivy         
+       this target is not necessary if you put ivy.jar in your ant lib directory
+       if you already have ivy in your ant lib, you can simply remove this
+       target and the dependency the 'go' target has on it
+       ================================= -->
+  <target name="install-ivy" depends="download-ivy" description="--> install ivy">
+    <!-- try to load ivy here from local ivy dir, in case the user has not already dropped
+         it into ant's lib dir (note that the latter copy will always take precedence).
+         We will not fail as long as local lib dir exists (it may be empty) and
+         ivy is in at least one of ant's lib dir or the local lib dir. -->
+    <path id="ivy.lib.path">
+      <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+    </path>
+    <taskdef resource="org/apache/ivy/ant/antlib.xml"
+             uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+  </target>    
+
+  <!-- ================================= 
+       target: update-deps
+       ================================= -->
+  <target  name="update-deps" depends="install-ivy"> 
+    <!-- Some setups require a libs directory containing all
+     dependencies. This can be accomplished by the export task, which
+     will copy all jars into the output directory and will optionally
+     generate a corresponding classpath file.  
+
+     Note: the generated classpath file will contain the filenames
+     without any path information, this is where the pathprefix
+     argument comes into play. The classpath option of this task may
+     replace the previously mentioned static:store.  -->
+    <export:export settings="ivysettings.xml" input="ivy.xml" 
+                   classpath="project.classpath" output="libs" pathprefix="libs/" />
+
+
+    <!-- The following element will create an eclipse .classpath file which will include the
+    jars, sources and javadoc. Note: The generated .classpath and project.classpath files will
+    point to the jar files in your ivy cache. -->
+    <eclipse:classpath >
+      <entry kind="src" path="src" output="bin" />
+      <entry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6" />
+      <ivy settings="ivysettings.xml" input="ivy.xml" />
+    </eclipse:classpath>
+  </target>
+
+  <target name="compile" >
+    <mkdir dir="bin" />
+    <static:load input="project.classpath" refid="classpath" />
+    <javac srcdir="src" destdir="bin" includeantruntime="false">
+      <classpath refid="classpath" />
+    </javac>
+  </target>
+
+
+  <!-- ================================= 
+       target: clean
+       ================================= -->
+  <target name="clean">
+    <delete dir="bin" />
+  </target>
+	
+  <!-- ================================= 
+       target: clean-cache              
+       ================================= -->
+  <target name="clean-cache" depends="install-ivy" 
+          description="--> clean the ivy cache">
+    <ivy:cleancache />
+  </target>
+
+</project>
+
+
+
+ 
