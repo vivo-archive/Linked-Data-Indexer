@@ -1,3 +1,8 @@
 .classpath
 project.classpath
 libs
+
+#emacs temp files
+*~
+[#]*[#]
+.\#*
