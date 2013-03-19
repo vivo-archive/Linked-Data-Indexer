@@ -1,5 +1,9 @@
+# Eclipse artifacts
 .classpath
 project.classpath
+bin
+
+# output from Ivy
 libs
 
 #emacs temp files
