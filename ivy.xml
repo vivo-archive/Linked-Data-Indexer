@@ -4,8 +4,9 @@
   <dependencies>
     
     <dependency org="org.apache.hadoop" name="hadoop-core" rev="1.0.4"/>
-    
-    <dependency org="org.apache.jena" name="apache-jena" rev="2.7.3"/>
+               
+    <dependency org="org.apache.jena" name="jena-tdb" rev="0.10.0"/>
+            
     
     <dependency org="org.openrdf.sesame" name="sesame-runtime" rev="2.7.0-beta2"/>
     
