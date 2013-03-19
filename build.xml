@@ -10,6 +10,9 @@
   <property name="build.dir" value="build" />
   <property name="src.dir" value="src" />
 
+  <!-- jars that are not from ivy dependency management -->
+  <property name="ivy.lib.dir" value="lib"/>
+
   <!-- deifne the ivy task -->
   <property name="ivy.jar.dir" value="${basedir}/contrib" />
   <path id="ivy.lib.path"><fileset dir="${ivy.jar.dir}" includes="*.jar"/></path>
@@ -21,6 +24,11 @@
   <taskdef uri="antlib:com.unicorntoast.ant.ivy.eclipse" classpath="${ant_ivy_tools_classpath}" />
   <taskdef uri="antlib:com.unicorntoast.ant.ivy.static_classpath" classpath="${ant_ivy_tools_classpath}" />
   <taskdef uri="antlib:com.unicorntoast.ant.ivy.export" classpath="${ant_ivy_tools_classpath}" />
+
+  <!-- jar files in checked in lib dir -->
+  <path id="checkedin.classpath">
+    <fileset dir="lib" includes="*.jar" />
+  </path>
 
   <!-- ================================= 
        target: help
@@ -64,10 +72,12 @@
 
   <target name="compile" >
     <mkdir dir="bin" />
-    <static:load input="project.classpath" refid="classpath" />
-    <javac srcdir="src" destdir="bin" includeantruntime="false">
-      <classpath refid="classpath" />
-    </javac>
+    <static:load input="project.classpath" refid="ivy.classpath" />  	  	  	  	
+  	<path id="compile.classpath" >
+  	    <path refid="checkedin.classpath"/>
+		<path refid="ivy.classpath" />
+  	</path>  	  	  	  	
+    <javac srcdir="src" destdir="bin" classpathref="compile.classpath" includeantruntime="false"/>      
   </target>
 
 
